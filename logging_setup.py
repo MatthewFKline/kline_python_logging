@@ -1,68 +1,44 @@
 import logging
 import sys
+import colorama
 
 LOGGING_LEVEL = logging.DEBUG
+
+
 # LOGGING_LEVEL = logging.INFO
 # LOGGING_LEVEL = logging.WARNING
 # LOGGING_LEVEL = logging.ERROR
 # LOGGING_LEVEL = logging.CRITICAL
 
 
-def header():
-    logging.getLogger().critical("=" * 95)
-    logging.getLogger().critical(" " * 39 + "STARTING LOGGING")
-    logging.getLogger().critical("=" * 95)
-    logging.getLogger().critical("| SEVERITY:    MODULE    LINE:           FUNCTION ||             MESSAGE            ||  TIME  |")
-    logging.getLogger().critical("-" * 95)
+def init_logging(name):
+    class Kline_Formatter(logging.Formatter):
+        def format(self, record):
+            self.datefmt = "%H:%M:%S"
+            format_string = "%(levelname)10s: %(module)12s %(lineno)3d:%(funcName)20s || %(message)30s || %(asctime)s"
+            format_string = "=" * 80 + "\n"
+            format_string += f"%(levelname)-10s %(funcName)-20s || TID:%(thread)-5d || %(message)-30s || %(asctime)s\n"
+            format_string += f"%(pathname)s:%(lineno)d\n"
+            format_string += "=" * 80
 
+            color_level_dict = {
+                10: colorama.Fore.BLUE,
+                20: colorama.Fore.GREEN,
+                30: colorama.Fore.YELLOW,
+                40: colorama.Fore.RED,
+                50: colorama.Fore.MAGENTA,
+            }
 
-def init_logging_simple(name):
-    logging.basicConfig(level=LOGGING_LEVEL,
-                        format="%(levelname)10s: %(module)12s %(lineno)3d:%(funcName)20s || %(message)30s || %(asctime)s",
-                        datefmt = "%H:%M:%S")
-    log = logging.getLogger(name)
-    log.setLevel(LOGGING_LEVEL)
-    return logging.getLogger(name)
+            self._style._fmt = color_level_dict[record.levelno] + format_string + colorama.Style.RESET_ALL
 
+            return logging.Formatter.format(self, record)
 
-def init_logging(name, complex=False):
-    if not complex:
-        header()
-        return init_logging_simple(name)
-    else:
-        try:
-            import colorama
-        except ModuleNotFoundError as e:
-            logging.getLogger().critical("=" * 80)
-            logging.error(str(e))
-            logging.warning("COULD NOT IMPORT COLORAMA, LOGGING FORMATTING WILL BREAK")
-            logging.warning("Please set 'complex' to 'False' to restore proper formatting")
-            logging.getLogger().critical("=" * 80)
-            return init_logging_simple(name)
+    def init_logging_complex(name):
+        logger = logging.getLogger(name)
+        handler = logging.StreamHandler(sys.stdout)
+        handler.setFormatter(Kline_Formatter())
+        logger.addHandler(handler)
+        logger.setLevel(LOGGING_LEVEL)
+        return logger
 
-        class Kline_Formatter(logging.Formatter):
-            def format(self, record):
-                self.datefmt = "%H:%M:%S"
-                format_string = "%(levelname)10s: %(module)12s %(lineno)3d:%(funcName)20s || %(message)30s || %(asctime)s"
-                if record.levelno == logging.DEBUG:
-                    self._style._fmt = colorama.Fore.BLUE + format_string + colorama.Style.RESET_ALL
-                elif record.levelno == logging.INFO:
-                    self._style._fmt = colorama.Fore.GREEN + format_string + colorama.Style.RESET_ALL
-                elif record.levelno == logging.WARNING:
-                    self._style._fmt = colorama.Fore.YELLOW + format_string + colorama.Style.RESET_ALL
-                elif record.levelno == logging.ERROR:
-                    self._style._fmt = colorama.Fore.RED + format_string + colorama.Style.RESET_ALL
-                elif record.levelno == logging.CRITICAL:
-                    self._style._fmt = colorama.Fore.MAGENTA + format_string + colorama.Style.RESET_ALL
-                return logging.Formatter.format(self, record)
-
-        def init_logging_complex(name):
-            logger = logging.getLogger(name)
-            handler = logging.StreamHandler(sys.stdout)
-            handler.setFormatter(Kline_Formatter())
-            logger.addHandler(handler)
-            logger.setLevel(LOGGING_LEVEL)
-            return logger
-
-        header()
-        return init_logging_complex(name)
+    return init_logging_complex(name)

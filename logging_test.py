@@ -1,6 +1,7 @@
 import logging_setup
+import submodules_folder.submodule_one
 
-log = logging_setup.init_logging(__name__, complex=True)
+log = logging_setup.init_logging(__name__)
 
 log.debug("DEBUG TEXT HERE")
 log.info("INFO TEXT HERE")
@@ -17,4 +18,6 @@ def log_tests():
     log.fatal("FATAL TEXT HERE")
 
 
-log_tests()
+# log_tests()
+
+submodules_folder.submodule_one.log_sub_one()
