@@ -15,11 +15,10 @@ def init_logging(name):
     class Kline_Formatter(logging.Formatter):
         def format(self, record):
             self.datefmt = "%H:%M:%S"
-            format_string = "%(levelname)10s: %(module)12s %(lineno)3d:%(funcName)20s || %(message)30s || %(asctime)s"
-            format_string = "=" * 80 + "\n"
+            format_string = "=" * 90 + "\n"
             format_string += f"%(levelname)-10s %(funcName)-20s || TID:%(thread)-5d || %(message)-30s || %(asctime)s\n"
             format_string += f"%(pathname)s:%(lineno)d\n"
-            format_string += "=" * 80
+            format_string += "=" * 90
 
             color_level_dict = {
                 10: colorama.Fore.BLUE,
